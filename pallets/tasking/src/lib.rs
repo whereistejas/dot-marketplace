@@ -18,7 +18,7 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 	}
 
-	#[pallet::event] // <-- Step 3. code block will replace this.
+	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	#[pallet::metadata(T::AccountId = "AccountId")]
 	pub enum Event<T: Config> {
@@ -30,7 +30,7 @@ pub mod pallet {
 		GetTask(Vec<TaskId>),
 	}
 
-	#[pallet::error] // <-- Step 4. code block will replace this.
+	#[pallet::error]
 	pub enum Error<T> {
 		/// Duplicate tasks cannot exist.
 		TaskAlreadyExists,
@@ -44,14 +44,14 @@ pub mod pallet {
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
-	#[pallet::storage] // <-- Step 5. code block will replace this.
+	#[pallet::storage]
 	pub(super) type Tasks<T: Config> =
 		StorageMap<_, Blake2_128Concat, TaskId, (T::AccountId, T::BlockNumber), ValueQuery>;
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
 
-	#[pallet::call] // <-- Step 6. code block will replace this.
+	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(1_000)]
 		pub fn create_task(origin: OriginFor<T>, task: TaskId) -> DispatchResultWithPostInfo {
@@ -77,6 +77,8 @@ pub mod pallet {
 			let (owner, _) = Tasks::<T>::get(&task);
 
 			ensure!(sender == owner, Error::<T>::TaskWrongOwner);
+
+			Tasks::<T>::remove(&task);
 
 			Self::deposit_event(Event::RemoveTask(sender, task));
 
