@@ -1,9 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(test)]
-mod mock;
-
-#[cfg(test)]
 mod tests;
 
 // Re-export pallet items so that they can be accessed from the crate namespace.
@@ -87,7 +84,7 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(1_000)]
-		pub fn get_task(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn get_task(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let taskid: Vec<_> = Tasks::<T>::iter().map(|(key, ..)| key).collect();
 
 			Self::deposit_event(Event::GetTask(taskid));

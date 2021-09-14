@@ -1,4 +1,4 @@
-use crate::{self as pallet_tasking, Config, Error};
+use crate::{self as pallet_tasking, Config};
 use frame_support::{assert_ok, parameter_types};
 use frame_system as system;
 use sp_core::H256;
@@ -62,6 +62,9 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap().into()
 }
 
+// Refer to following issue for FRAME V2 sample code
+// https://github.com/substrate-developer-hub/recipes/issues/458
+
 #[test]
 fn task_actions() {
 	new_test_ext().execute_with(|| {
@@ -73,7 +76,7 @@ fn task_actions() {
 		let expected_event = Event::TaskingPallet(pallet_tasking::Event::GetTask(tasks));
 		assert_ok!(TaskingPallet::get_task(Origin::none()));
 
-		assert_eq!(System::events()[1].event, expected_event);
+		assert_eq!(System::events()[0].event, expected_event);
 	});
 }
 
