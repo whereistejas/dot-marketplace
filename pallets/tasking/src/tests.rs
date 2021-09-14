@@ -2,6 +2,7 @@ use crate::{self as pallet_tasking, Config};
 use frame_support::{assert_ok, parameter_types};
 use frame_system as system;
 use sp_core::H256;
+use sp_io::TestExternalities;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -57,9 +58,16 @@ impl Config for TestRuntime {
 	type Event = Event;
 }
 
+struct ExternalityBuilder;
+
 // Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap().into()
+impl ExternalityBuilder {
+	pub fn build() -> TestExternalities {
+		let storage = system::GenesisConfig::default().build_storage::<TestRuntime>().unwrap();
+		let mut ext = TestExternalities::from(storage);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
+	}
 }
 
 // Refer to following issue for FRAME V2 sample code
@@ -67,21 +75,22 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 #[test]
 fn task_actions() {
-	new_test_ext().execute_with(|| {
+	ExternalityBuilder::build().execute_with(|| {
 		// Create a task.
 		assert_ok!(TaskingPallet::create_task(Origin::signed(1), 1));
+		println!("{:?}", System::events());
 
 		// Get the list of all tasks
 		let tasks = vec![1];
 		let expected_event = Event::TaskingPallet(pallet_tasking::Event::GetTask(tasks));
 		assert_ok!(TaskingPallet::get_task(Origin::none()));
 
-		assert_eq!(System::events()[0].event, expected_event);
+		assert_eq!(System::events()[1].event, expected_event);
 	});
 }
 
-#[test]
-fn check_errors() {
-	// TODO
-	assert!(true);
-}
+// #[test]
+// fn check_errors() {
+// 	// TODO
+// 	assert!(true);
+// }
